@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>551</width>
+    <height>456</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Твой Дневник</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(0, 44, 44);
+selection-background-color: rgb(7, 52, 80);
+alternate-background-color: rgb(0, 85, 0);
+
+color: rgb(217, 212, 199);
+
+font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QListWidget" name="Categories">
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 25, 25);</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>551</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(0, 44, 44);
+</string>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="title">
+     <string>Меню</string>
+    </property>
+    <addaction name="acCreate"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <action name="acCreate">
+   <property name="text">
+    <string>Создать категорию</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
