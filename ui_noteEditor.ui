@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>578</width>
-    <height>381</height>
+    <height>379</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,23 +23,10 @@ color: rgb(217, 212, 199);
 font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0" colspan="3">
+   <item row="1" column="0" colspan="4">
     <widget class="QTextEdit" name="textEdit">
      <property name="styleSheet">
       <string notr="true">background-color: rgb(0, 25, 25);</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="pushButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Ок</string>
      </property>
     </widget>
    </item>
@@ -50,23 +37,13 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="3">
+   <item row="2" column="0" colspan="4">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="2" column="1">
+      <widget class="QDateTimeEdit" name="dateTimeEdit"/>
+     </item>
      <item row="2" column="0">
       <widget class="QDateTimeEdit" name="dteStart"/>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_3">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Длительность</string>
-       </property>
-      </widget>
      </item>
      <item row="2" column="2">
       <widget class="QComboBox" name="cbFlags">
@@ -75,25 +52,8 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QTimeEdit" name="teDuration">
-       <property name="showGroupSeparator" stdset="0">
-        <bool>false</bool>
-       </property>
-       <property name="currentSection">
-        <enum>QDateTimeEdit::HourSection</enum>
-       </property>
-       <property name="time">
-        <time>
-         <hour>0</hour>
-         <minute>0</minute>
-         <second>0</second>
-        </time>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0">
-      <widget class="QPushButton" name="pbDate">
+      <widget class="QPushButton" name="pbStart">
        <property name="contextMenuPolicy">
         <enum>Qt::DefaultContextMenu</enum>
        </property>
@@ -104,7 +64,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Дата</string>
+        <string>Начало</string>
        </property>
        <property name="flat">
         <bool>true</bool>
@@ -121,9 +81,19 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
       </widget>
      </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="pbEnd">
+       <property name="text">
+        <string>Конец</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
-   <item row="3" column="1">
+   <item row="3" column="3">
     <widget class="QPushButton" name="pushButton_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -136,6 +106,19 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
      </property>
      <property name="shortcut">
       <string>Esc</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="pushButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Ок</string>
      </property>
     </widget>
    </item>
