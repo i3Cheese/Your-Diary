@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog
 from ui_CategoryCreateDialog import Ui_CategoryCreateDialog
-from Categories import *
+from Categories import DEFAULT_CATEGORY, BUDGET_CATEGORY
 
 
 class CategoryCreateDialog(QDialog, Ui_CategoryCreateDialog):
@@ -8,8 +8,8 @@ class CategoryCreateDialog(QDialog, Ui_CategoryCreateDialog):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
-    def reject(self) -> tuple:
+    def answer(self) -> tuple:
         title = self.leTitle.text()
-        categoryType = Category if self.rbDefault.isChecked() \
-                        else BudgetCategory if self.rbBudget.isChecked() else None
+        categoryType = DEFAULT_CATEGORY if self.rbDefault.isChecked() \
+                        else BUDGET_CATEGORY if self.rbBudget.isChecked() else None
         return title, categoryType

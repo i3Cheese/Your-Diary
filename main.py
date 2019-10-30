@@ -1,7 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow
+import os
+from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget
 from ui_mainWindow import Ui_MainWindow
 from dialogs import CategoryCreateDialog
+from Categories import CategoryListWidgetItem
+from datetime import datetime
 import sqlite3
 
 DATA_BASE = '_Your_Diary.db'
@@ -16,6 +19,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.acCreate.triggered.connect(self.create_category)
+        self.showCategories()
+        self.lwCategories.itemDoubleClicked.connect(self.openCategory)
 
     def create_category(self) -> None:
         """Запрашивает название и тип категории через CategoryCreateDialog и затем создает её
@@ -23,33 +28,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dialog = CategoryCreateDialog()
         if not self.dialog.exec():
             return None
-        title, categoryType = self.dialog.reject()
+        title, categoryType = self.dialog.answer()
+        self.addCategory(title, categoryType)
+        self.showCategories()
 
-    def addCategory(self, title, category) -> None:
-        pass
+    def addCategory(self, title, categoryType) -> None:
+        """Добавляет категорию в базу. В качестве creation использует системное время"""
+        creation = datetime.today().replace(microsecond=0)
+        con = sqlite3.connect(DATA_BASE)
+        cur = con.cursor()
+        cur.execute(f'''INSERT INTO categories(type, title, creation) '''
+                    f'''VALUES({categoryType}, "{title}", "{creation.isoformat(" ")}");''')
+        con.commit()
+        con.close()
 
     def setupDB(self):
         """Подключается к существующей или создаёт свою базу данных.
         Если в папке с программой существовала база с таким же названием, но другой архитектурой
         программа будет работать некорректно."""
-        if sys.path.exists(data_base):
+        if os.path.exists(DATA_BASE):
             return None
         else:
-            con = sqlite3.connect(data_base)
+            con = sqlite3.connect(DATA_BASE)
             cur = con.cursor()
-
-            # Создаём таблицу типов
-            cur.execute('''CREATE TABLE types ('''
-                        '''id   INTEGER PRIMARY KEY AUTOINCREMENT,'''
-                        '''name STRING  UNIQUE);''')
-            cur.execute('''INSERT INTO types(name) VALUES('default'); '''
-                        '''INSERT INTO types(name) VALUES('budget');''')
 
             # Создаём таблицу категорий
             cur.execute('''CREATE TABLE categories (
     id       INTEGER  PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT
                       NOT NULL,
-    category INTEGER  REFERENCES types (id) ON DELETE CASCADE,
+    type     INTEGER,
     title    STRING,
     creation DATETIME);''')
 
@@ -77,6 +84,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             con.commit()
             con.close()
+
+    def loadCategoriesId(self):
+        con = sqlite3.connect(DATA_BASE)
+        cur = con.cursor()
+        ids = [tup[0] for tup in cur.execute(f'SELECT id FROM categories').fetchall()]
+        con.close()
+        return ids
+
+    def showCategories(self):
+        ids = self.loadCategoriesId()
+        items = sorted([CategoryListWidgetItem(id_, DATA_BASE) for id_ in ids])
+        self.lwCategories.clear()
+        for item in items:
+            self.lwCategories.addItem(item)
+
+    def openCategory(self, item):
+        item.open()
 
 
 if __name__ == '__main__':
