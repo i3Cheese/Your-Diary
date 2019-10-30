@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QListWidgetItem, QWidget
 from ui_category import Ui_Category
 from datetime import datetime
 
-
 DEFAULT_CATEGORY = 1
 BUDGET_CATEGORY = 2
 
@@ -37,6 +36,16 @@ class CategoryListWidgetItem(QListWidgetItem):
 
     def __lt__(self, other):
         return self.creation < other.creation
+
+    def deleteFromDB(self):
+        con = sqlite3.connect(self.data_base)
+        cur = con.cursor()
+        cur.execute(f'PRAGMA foreign_keys = 1;')
+        cur.execute(f'DELETE FROM categories WHERE id = {self.id_}')
+        con.commit()
+        con.close()
+        del self
+
 
 
 class CategoryWidget(QWidget, Ui_Category):

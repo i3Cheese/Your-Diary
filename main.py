@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from ui_mainWindow import Ui_MainWindow
 from dialogs import CategoryCreateDialog
 from Categories import CategoryListWidgetItem
@@ -19,8 +19,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.acCreate.triggered.connect(self.create_category)
-        self.showCategories()
-        self.lwCategories.itemDoubleClicked.connect(self.openCategory)
+        self.lwCategories.setDB(DATA_BASE)
+        self.lwCategories.showCategories()
 
     def create_category(self) -> None:
         """Запрашивает название и тип категории через CategoryCreateDialog и затем создает её
@@ -30,7 +30,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return None
         title, categoryType = self.dialog.answer()
         self.addCategory(title, categoryType)
-        self.showCategories()
+        self.lwCategories.showCategories()
 
     def addCategory(self, title, categoryType) -> None:
         """Добавляет категорию в базу. В качестве creation использует системное время"""
@@ -85,22 +85,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             con.commit()
             con.close()
 
-    def loadCategoriesId(self):
-        con = sqlite3.connect(DATA_BASE)
-        cur = con.cursor()
-        ids = [tup[0] for tup in cur.execute(f'SELECT id FROM categories').fetchall()]
-        con.close()
-        return ids
-
-    def showCategories(self):
-        ids = self.loadCategoriesId()
-        items = sorted([CategoryListWidgetItem(id_, DATA_BASE) for id_ in ids])
-        self.lwCategories.clear()
-        for item in items:
-            self.lwCategories.addItem(item)
-
-    def openCategory(self, item):
-        item.open()
 
 
 if __name__ == '__main__':
