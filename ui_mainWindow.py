@@ -8,7 +8,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from DiaryListWidget import DiaryListWidget  # Заменяем QListWidget на свой
+from Categories import DiaryListWidget  # Заменяем QListWidget на свой
 
 
 class Ui_MainWindow(object):

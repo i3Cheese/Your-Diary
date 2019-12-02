@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>noteEditor</class>
- <widget class="QWidget" name="noteEditor">
+ <widget class="QDialog" name="noteEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>578</width>
+    <width>575</width>
     <height>379</height>
    </rect>
   </property>
@@ -23,7 +23,7 @@ color: rgb(217, 212, 199);
 font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0" colspan="4">
+   <item row="1" column="0" colspan="3">
     <widget class="QTextEdit" name="textEdit">
      <property name="styleSheet">
       <string notr="true">background-color: rgb(0, 25, 25);</string>
@@ -37,10 +37,10 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="4">
+   <item row="2" column="0" colspan="3">
     <layout class="QGridLayout" name="gridLayout">
      <item row="2" column="1">
-      <widget class="QDateTimeEdit" name="dateTimeEdit"/>
+      <widget class="QDateTimeEdit" name="dteEnd"/>
      </item>
      <item row="2" column="0">
       <widget class="QDateTimeEdit" name="dteStart"/>
@@ -93,32 +93,13 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
      </item>
     </layout>
    </item>
-   <item row="3" column="3">
-    <widget class="QPushButton" name="pushButton_2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item row="3" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Save</set>
      </property>
-     <property name="text">
-      <string>Отмена</string>
-     </property>
-     <property name="shortcut">
-      <string>Esc</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="pushButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Ок</string>
+     <property name="centerButtons">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

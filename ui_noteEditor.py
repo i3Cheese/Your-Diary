@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_noteEditor.ui'
+# Form implementation generated from reading ui file 'ui/ui_noteEditor.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_noteEditor(object):
     def setupUi(self, noteEditor):
         noteEditor.setObjectName("noteEditor")
-        noteEditor.resize(578, 379)
+        noteEditor.resize(575, 379)
         noteEditor.setStyleSheet("background-color: rgb(0, 44, 44);\n"
 "selection-background-color: rgb(7, 52, 80);\n"
 "alternate-background-color: rgb(0, 85, 0);\n"
@@ -24,15 +24,15 @@ class Ui_noteEditor(object):
         self.textEdit = QtWidgets.QTextEdit(noteEditor)
         self.textEdit.setStyleSheet("background-color: rgb(0, 25, 25);")
         self.textEdit.setObjectName("textEdit")
-        self.gridLayout_2.addWidget(self.textEdit, 1, 0, 1, 4)
+        self.gridLayout_2.addWidget(self.textEdit, 1, 0, 1, 3)
         self.label = QtWidgets.QLabel(noteEditor)
         self.label.setObjectName("label")
         self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
-        self.dateTimeEdit = QtWidgets.QDateTimeEdit(noteEditor)
-        self.dateTimeEdit.setObjectName("dateTimeEdit")
-        self.gridLayout.addWidget(self.dateTimeEdit, 2, 1, 1, 1)
+        self.dteEnd = QtWidgets.QDateTimeEdit(noteEditor)
+        self.dteEnd.setObjectName("dteEnd")
+        self.gridLayout.addWidget(self.dteEnd, 2, 1, 1, 1)
         self.dteStart = QtWidgets.QDateTimeEdit(noteEditor)
         self.dteStart.setObjectName("dteStart")
         self.gridLayout.addWidget(self.dteStart, 2, 0, 1, 1)
@@ -55,23 +55,12 @@ class Ui_noteEditor(object):
         self.pbEnd.setFlat(True)
         self.pbEnd.setObjectName("pbEnd")
         self.gridLayout.addWidget(self.pbEnd, 1, 1, 1, 1)
-        self.gridLayout_2.addLayout(self.gridLayout, 2, 0, 1, 4)
-        self.pushButton_2 = QtWidgets.QPushButton(noteEditor)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_2.sizePolicy().hasHeightForWidth())
-        self.pushButton_2.setSizePolicy(sizePolicy)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout_2.addWidget(self.pushButton_2, 3, 3, 1, 1)
-        self.pushButton = QtWidgets.QPushButton(noteEditor)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton.sizePolicy().hasHeightForWidth())
-        self.pushButton.setSizePolicy(sizePolicy)
-        self.pushButton.setObjectName("pushButton")
-        self.gridLayout_2.addWidget(self.pushButton, 3, 2, 1, 1)
+        self.gridLayout_2.addLayout(self.gridLayout, 2, 0, 1, 3)
+        self.buttonBox = QtWidgets.QDialogButtonBox(noteEditor)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok|QtWidgets.QDialogButtonBox.Save)
+        self.buttonBox.setCenterButtons(False)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 3, 0, 1, 1)
 
         self.retranslateUi(noteEditor)
         QtCore.QMetaObject.connectSlotsByName(noteEditor)
@@ -83,7 +72,4 @@ class Ui_noteEditor(object):
         self.pbStart.setText(_translate("noteEditor", "Начало"))
         self.pbFlag.setText(_translate("noteEditor", "Флаг"))
         self.pbEnd.setText(_translate("noteEditor", "Конец"))
-        self.pushButton_2.setText(_translate("noteEditor", "Отмена"))
-        self.pushButton_2.setShortcut(_translate("noteEditor", "Esc"))
-        self.pushButton.setText(_translate("noteEditor", "Ок"))
 

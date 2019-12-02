@@ -2,12 +2,11 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from ui_mainWindow import Ui_MainWindow
-from dialogs import CategoryCreateDialog
-from Categories import CategoryListWidgetItem
+from Categories import CategoryCreateDialog
 from datetime import datetime
 import sqlite3
 
-DATA_BASE = '_Your_Diary.db'
+DATA_BASE = "_Your_Diary.db"
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -18,11 +17,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
-        self.acCreate.triggered.connect(self.create_category)
-        self.lwCategories.setDB(DATA_BASE)
+        self.acCreate.triggered.connect(self.createCategory)
+
+        self.lwCategories.data_base = DATA_BASE
         self.lwCategories.showCategories()
 
-    def create_category(self) -> None:
+    def createCategory(self) -> None:
         """Запрашивает название и тип категории через CategoryCreateDialog и затем создает её
         вызвав addCategory. Вызывается пользователем"""
         self.dialog = CategoryCreateDialog()
@@ -32,8 +32,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.addCategory(title, categoryType)
         self.lwCategories.showCategories()
 
-    def addCategory(self, title, categoryType) -> None:
-        """Добавляет категорию в базу. В качестве creation использует системное время"""
+    @staticmethod
+    def addCategory(title, categoryType) -> None:
+        """Добавляет категорию в базу. В качестве creation использует системное время
+        :type title: str
+        :type categoryType: int
+        """
         creation = datetime.today().replace(microsecond=0)
         con = sqlite3.connect(DATA_BASE)
         cur = con.cursor()
@@ -42,7 +46,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         con.commit()
         con.close()
 
-    def setupDB(self):
+    @staticmethod
+    def setupDB() -> None:
         """Подключается к существующей или создаёт свою базу данных.
         Если в папке с программой существовала база с таким же названием, но другой архитектурой
         программа будет работать некорректно."""
@@ -62,21 +67,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             # Создаём таблицу флагов
             cur.execute('''CREATE TABLE flags (
-    id       INTEGER PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT
+    title    STRING  PRIMARY KEY ON CONFLICT REPLACE
                      NOT NULL,
     category INTEGER REFERENCES categories (id) ON DELETE CASCADE
                      NOT NULL,
-    title    STRING,
     red      INTEGER,
     green    INTEGER,
-    blue     INTEGER);''')  # red, green, blue - значение каналов RGB
+    blue     INTEGER
+);''')  # red, green, blue - значение каналов RGB
 
             # Создаём таблицу записей стандартного типа
             cur.execute('''CREATE TABLE defaultNotes (
     id       INTEGER  PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT,
     category INTEGER  REFERENCES categories (id) ON DELETE CASCADE,
     text     TEXT,
-    flag     INTEGER  REFERENCES flags (id) ON DELETE SET NULL,
+    flag     STRING   REFERENCES flags (title) ON DELETE SET NULL
+                                               ON UPDATE CASCADE,
     start    DATETIME,
     [end]    DATETIME);''')
 
@@ -84,7 +90,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             con.commit()
             con.close()
-
 
 
 if __name__ == '__main__':
