@@ -137,8 +137,8 @@ class CategoryWidget(QWidget, Ui_Category):
         self.tableWidget.category_id = self.listWidget.category_id = self.id_
         self.tableWidget.reload()
         self.listWidget.reload()
-        # инициализируем ListWidget=
-        # TODO: resize CategoryWidget
+
+        # Настройки размера окна
         self.resize(
             self.verticalLayout.maximumSize().width() + self.tableWidget.size().width() + 49,
             self.height())
@@ -152,6 +152,7 @@ class CategoryWidget(QWidget, Ui_Category):
         self.editor = NoteEditor(self.data_base, self.id_, -1)
         self.editor.exec()
         self.tableWidget.reload()
+        self.listWidget.reload()
 
     def setupUi(self, Category):
         super().setupUi(Category)

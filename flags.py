@@ -1,8 +1,10 @@
 import sqlite3
 
-from PyQt5.QtGui import QColor, QBrush, QIcon, QPixmap, QImage
-from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QAction, QMenu
-from qtpy import QtCore
+from PyQt5.QtGui import QColor, QBrush, QIcon, QPixmap, QImage, QPalette
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QAction, QMenu, QDialog, QColorDialog
+from ui_FlagEditor import Ui_FlagEditor
+from typing import Tuple
 
 
 class FlagListWidgetItem(QListWidgetItem):
@@ -75,12 +77,14 @@ class FlagListWidget(QListWidget):
 
     def reload(self):
         self.clear()
+        print("FlagsReload")
         ids = self.loadFlagsId()
         items = [FlagListWidgetItem(id_, self.data_base) for id_ in ids]
         for item in items:
             self.addItem(item)
 
-    def openFlagEditor(self, item: FlagListWidgetItem):
+    @staticmethod
+    def openFlagEditor(item: FlagListWidgetItem):
         item.open()
 
 
@@ -90,3 +94,60 @@ class FlagIcon(QIcon):
         im = QImage(10, 10, QImage.Format_RGB444)
         im.fill(c)
         super().__init__(QPixmap.fromImage(im))
+
+
+class FlagEditor(QDialog, Ui_FlagEditor):
+    def __init__(self, data_base, category_id, flag_id=-1):
+        super().__init__()
+        self.category_id = category_id
+        self.color = QColor(100, 100, 100)
+        self.flag_id = flag_id
+        self.data_base = data_base
+
+        super().setupUi(self)
+        self.pbColor.clicked.connect(self.changeColor)
+
+    def changeColor(self):
+        color = QColorDialog.getColor(initial=self.color, title="Выберите цвет")
+        if color.isValid():
+            self.color = color
+            # настраиваем цвет leTitle
+            self.leTitle.hide()
+            palette = QPalette()
+            brush = QBrush(color)
+            brush.setStyle(Qt.SolidPattern)
+            palette.setBrush(QPalette.Active, QPalette.Window, brush)
+            self.leTitle.setPalette(palette)
+            self.leTitle.setAutoFillBackground(True)
+            self.leTitle.show()
+
+            print("Color  SETUP")
+
+    def accept(self) -> None:
+        self.save()
+        super().accept()
+
+    def save(self):
+        title = self.leTitle.text()
+        r, g, b, a = self.color.getRgb()
+
+        con = sqlite3.connect(self.data_base)
+        cur = con.cursor()
+
+        if self.flag_id == -1:
+            # наибольший существующий id + 1
+            old_id = cur.execute('SELECT id FROM flags ORDER BY id DESC').fetchone()
+            if old_id:
+                self.flag_id = old_id[0] + 1
+            else:
+                self.flag_id = 1
+
+        # Создаёт или заменяет запись
+        cur.execute(f'INSERT INTO flags(id, title, category, red, green, blue)'
+                    f'VALUES(?, ?, ?, ?, ?, ?)',
+                    (self.flag_id, title, self.category_id, r, g, b))
+        con.commit()
+        con.close()
+
+    def answer(self) -> Tuple[str, QColor, int]:
+        return self.leTitle.text(), self.color, self.flag_id

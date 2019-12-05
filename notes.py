@@ -6,7 +6,11 @@ from PyQt5 import QtCore
 from datetime import datetime
 from ui_noteEditor import Ui_noteEditor
 from ui_DateTimeDialog import Ui_DateTimeDialog
-from flags import FlagIcon
+from flags import FlagIcon, FlagEditor
+
+# Задают максимальную длину отображаемых данных
+max_text_len = 100
+max_title_len = 20
 
 
 class NoteTableWidgetItem(QTableWidgetItem):
@@ -50,9 +54,6 @@ class NotesTableWidget(QTableWidget):
 
     def reload(self) -> None:
         """Полностью перезагружаем таблицу из базы данных"""
-        # Задают максимальную длину отображаемых данных
-        max_text_len = 100
-        max_title_len = 20
 
         self.setColumnCount(4)
         self.setHorizontalHeaderLabels(("Начало", "Конец", "Текст", "Флаг"))
@@ -140,6 +141,7 @@ class NoteEditor(QDialog, Ui_noteEditor):
         self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.reject)
         self.pbStart.clicked.connect(self.getDT)
         self.pbEnd.clicked.connect(self.getDT)
+        self.pbFlag.clicked.connect(self.newFlag)
 
         self.loadData()
 
@@ -215,6 +217,13 @@ class NoteEditor(QDialog, Ui_noteEditor):
             if cur_flag_id != -1 and id_ == cur_flag_id:
                 self.cbFlags.setCurrentIndex(index)
             index += 1
+
+    def newFlag(self):
+        self.dl = FlagEditor(self.data_base, self.category_id)
+        if self.dl.exec():
+            title, color, flag_id = self.dl.answer()
+            self.cbFlags.insertItem(0, FlagIcon(color), title, userData=flag_id)
+            self.cbFlags.setCurrentIndex(0)
 
 
 class DateTimeDialog(QDialog, Ui_DateTimeDialog):
