@@ -92,7 +92,7 @@ class DiaryListWidget(QListWidget):
         items = self.selectedItems()
         for item in items:
             item.deleteFromDB()
-        self.showCategories()
+        self.reload()
 
     def loadCategoriesId(self) -> list:
         con = sqlite3.connect(self.data_base)
@@ -102,7 +102,7 @@ class DiaryListWidget(QListWidget):
         con.close()
         return ids
 
-    def showCategories(self):
+    def reload(self):
         ids = self.loadCategoriesId()
         items = [CategoryListWidgetItem(id_, self.data_base) for id_ in ids]
         self.clear()
@@ -132,10 +132,17 @@ class CategoryWidget(QWidget, Ui_Category):
 
         self.setupUi(self)
 
-        # инициализируем TableWidget
-        self.tableWidget.data_base = self.data_base
-        self.tableWidget.category_id = self.id_
+        # инициализируем TableWidget и ListWidget
+        self.tableWidget.data_base = self.listWidget.data_base = self.data_base
+        self.tableWidget.category_id = self.listWidget.category_id = self.id_
         self.tableWidget.reload()
+        self.listWidget.reload()
+        # инициализируем ListWidget=
+        # TODO: resize CategoryWidget
+        self.resize(
+            self.verticalLayout.maximumSize().width() + self.tableWidget.size().width() + 49,
+            self.height())
+        self.setMinimumWidth(self.size().width())
 
         self.pbNew.clicked.connect(self.createNote)
         self.pbNew.setShortcut("Ctrl+N")

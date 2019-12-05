@@ -20,7 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.acCreate.triggered.connect(self.createCategory)
 
         self.lwCategories.data_base = DATA_BASE
-        self.lwCategories.showCategories()
+        self.lwCategories.reload()
 
     def createCategory(self) -> None:
         """Запрашивает название и тип категории через CategoryCreateDialog и затем создает её
@@ -30,7 +30,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return None
         title, categoryType = self.dialog.answer()
         self.addCategory(title, categoryType)
-        self.lwCategories.showCategories()
+        self.lwCategories.reload()
 
     @staticmethod
     def addCategory(title, categoryType) -> None:
@@ -67,8 +67,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             # Создаём таблицу флагов
             cur.execute('''CREATE TABLE flags (
-    title    STRING  PRIMARY KEY ON CONFLICT REPLACE
-                     NOT NULL,
+    id       INTEGER PRIMARY KEY ASC ON CONFLICT REPLACE AUTOINCREMENT,
+    title    STRING  NOT NULL,
     category INTEGER REFERENCES categories (id) ON DELETE CASCADE
                      NOT NULL,
     red      INTEGER,
@@ -81,10 +81,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     id       INTEGER  PRIMARY KEY ON CONFLICT REPLACE AUTOINCREMENT,
     category INTEGER  REFERENCES categories (id) ON DELETE CASCADE,
     text     TEXT,
-    flag     STRING   REFERENCES flags (title) ON DELETE SET NULL
-                                               ON UPDATE CASCADE,
+    flag     INTEGER  REFERENCES flags (id) ON DELETE SET NULL
+                                            ON UPDATE CASCADE,
     start    DATETIME,
-    [end]    DATETIME);''')
+    [end]    DATETIME
+);''')
 
             # TODO: Создаём таблицу записей типа budget
 

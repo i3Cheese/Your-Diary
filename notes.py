@@ -2,8 +2,11 @@ import sqlite3
 from PyQt5.QtWidgets import QTableWidgetItem, QTableWidget, QMenu, QAction, QDialog, \
     QDialogButtonBox
 from PyQt5.Qt import QColor, QBrush
+from PyQt5 import QtCore
 from datetime import datetime
 from ui_noteEditor import Ui_noteEditor
+from ui_DateTimeDialog import Ui_DateTimeDialog
+from flags import FlagIcon
 
 
 class NoteTableWidgetItem(QTableWidgetItem):
@@ -21,11 +24,13 @@ class NoteTableWidgetItem(QTableWidgetItem):
         if brush is not None:
             self.setBackground(brush)
 
+        self.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+
     def __lt__(self, other):
         return self.value < other.value
 
 
-class CategoryTableWidget(QTableWidget):
+class NotesTableWidget(QTableWidget):
     """Предназначен для отображения и взаимодействия пользователя
      с записями внутри default category"""
     category_id: int
@@ -40,6 +45,8 @@ class CategoryTableWidget(QTableWidget):
         self.acDelete = QAction(self)
         self.acDelete.setText("Delete")
         self.acDelete.triggered.connect(self.deleteNotes)
+
+        self.cellDoubleClicked.connect(self.openEditor)
 
     def reload(self) -> None:
         """Полностью перезагружаем таблицу из базы данных"""
@@ -61,20 +68,25 @@ class CategoryTableWidget(QTableWidget):
             # конец
             self.setItem(i, 1, NoteTableWidgetItem(datetime.fromisoformat(note[2]), id_=id_))
             # текст
-            self.setItem(i, 2, NoteTableWidgetItem(note[3] if
+            self.setItem(i, 2, NoteTableWidgetItem(note[3].ljust(max_text_len, ' ') if
                                                    len(note[3]) <= max_text_len else
                                                    note[3][:max_text_len - 3] + '...',
                                                    id_=id_))
             # флаг
             if note[4]:
                 title, r, g, b = cur.execute(
-                    f'SELECT title, red, blue, green FROM flags WHERE title = "{note[4]}"'
+                    f'SELECT title, red, green, blue FROM flags WHERE id = "{note[4]}"'
                 ).fetchone()
-                self.setItem(i, 4, NoteTableWidgetItem(title if
+                self.setItem(i, 3, NoteTableWidgetItem(title.ljust(max_title_len, ' ') if
                                                        len(title) < max_title_len else
                                                        title[:max_title_len - 3] + '...',
                                                        brush=QBrush(QColor(r, g, b)), id_=id_))
+            else:
+                self.setItem(i, 3, NoteTableWidgetItem(' ' * max_title_len, id_=id_))
+
         self.resizeColumnsToContents()
+        self.resize(sum([self.columnWidth(i) for i in range(self.columnCount())]), self.height())
+        self.setMinimumSize(self.size())
         con.close()
 
     def loadNotes(self) -> list:
@@ -87,9 +99,8 @@ class CategoryTableWidget(QTableWidget):
         con.close()
         return notes
 
-    def itemDoubleClicked(self, item: QTableWidgetItem) -> None:
+    def openEditor(self) -> None:
         """Открытие редактора"""
-        print("A")
         self.editor = NoteEditor(self.data_base, self.category_id, self.currentItem().id_)
         self.editor.exec()
         self.reload()
@@ -107,9 +118,11 @@ class CategoryTableWidget(QTableWidget):
         ids.discard(-1)
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
-        cur.execute(f'DELETE FROM defaultNotes WHERE id IN {tuple(ids)}')
+        cur.execute(f'DELETE FROM defaultNotes WHERE id IN ({"? " * len(ids)})', tuple(ids))
         con.commit()
         con.close()
+
+        self.reload()
 
 
 class NoteEditor(QDialog, Ui_noteEditor):
@@ -125,10 +138,40 @@ class NoteEditor(QDialog, Ui_noteEditor):
         self.buttonBox.button(QDialogButtonBox.Save).setShortcut("Ctrl+S")
         self.buttonBox.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
         self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.reject)
+        self.pbStart.clicked.connect(self.getDT)
+        self.pbEnd.clicked.connect(self.getDT)
+
+        self.loadData()
+
+    def loadData(self):
+        """Заполняет виджеты данными из базы или стандартными"""
+        if self.id_ == -1:
+            # Стандартные
+            start = datetime.now().replace(microsecond=0).isoformat(' ')
+            end = start
+            text = ''
+            flag = -1
+        else:
+            # Загружаем данные из базы
+            con = sqlite3.connect(self.data_base)
+            cur = con.cursor()
+            start, end, text, flag = cur.execute(
+                f'SELECT start, end, text, flag FROM defaultNotes WHERE id = ?',
+                (self.id_,)
+            ).fetchone()
+            con.commit()
+            con.close()
+
+        # Загружаем их в виджет
+        self.dteStart.setDateTime(datetime.fromisoformat(start))
+        self.dteEnd.setDateTime(datetime.fromisoformat(end))
+        self.textEdit.setText(text)
+        self.fillFlagCB(flag)
+        # TODO: Обработать флаг
 
     def save(self):
         text = self.textEdit.toPlainText()
-        flag = self.cbFlags.currentText()
+        flag = self.cbFlags.currentData()
         start = self.dteStart.dateTime().toPyDateTime().isoformat(' ')
         end = self.dteEnd.dateTime().toPyDateTime().isoformat(' ')
 
@@ -137,7 +180,11 @@ class NoteEditor(QDialog, Ui_noteEditor):
 
         if self.id_ == -1:
             # наибольший существующий id + 1
-            self.id_ = cur.execute('SELECT id FROM defaultNotes ORDER BY id DESC').fetchone()[0] + 1
+            old_id = cur.execute('SELECT id FROM defaultNotes ORDER BY id DESC').fetchone()
+            if old_id:
+                self.id_ = old_id[0] + 1
+            else:
+                self.id_ = 0
 
         # Создаёт или заменяет запись
         cur.execute(f'INSERT INTO defaultNotes(id, category, text, flag, start, end) '
@@ -149,3 +196,37 @@ class NoteEditor(QDialog, Ui_noteEditor):
     def accept(self):
         self.save()
         super().accept()
+
+    def getDT(self):
+        place = self.dteStart if self.sender() is self.pbStart else self.dteEnd
+        self.dialog = DateTimeDialog(place.dateTime().toPyDateTime())
+        if self.dialog.exec():
+            place.setDateTime(self.dialog.answer())
+
+    def fillFlagCB(self, cur_flag_id=-1):
+        """Заполняем combobox данными о флагах"""
+        con = sqlite3.connect(self.data_base)
+        cur = con.cursor()
+        flags = cur.execute(
+            f'SELECT id, title, red, green, blue FROM flags WHERE category = {self.category_id}')
+        index = 0
+        for id_, title, r, g, b in flags:
+            self.cbFlags.addItem(FlagIcon(QColor(r, g, b)), title, userData=id_)
+            if cur_flag_id != -1 and id_ == cur_flag_id:
+                self.cbFlags.setCurrentIndex(index)
+            index += 1
+
+
+class DateTimeDialog(QDialog, Ui_DateTimeDialog):
+    def __init__(self, dt: datetime):
+        super().__init__()
+        super().setupUi(self)
+
+        self.calendarWidget.setSelectedDate(dt.date())
+        self.timeEdit.setTime(dt.time())
+
+    def answer(self):
+        dt = self.timeEdit.dateTime().toPyDateTime()
+        date = self.calendarWidget.selectedDate().toPyDate()
+        dt = dt.replace(year=date.year, month=date.month, day=date.day)
+        return dt
