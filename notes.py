@@ -1,6 +1,8 @@
 import sqlite3
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QTableWidget, QMenu, QAction, QDialog, \
-    QDialogButtonBox
+    QDialogButtonBox, QHeaderView
 from PyQt5.Qt import QColor, QBrush
 from PyQt5 import QtCore
 from datetime import datetime
@@ -34,6 +36,14 @@ class NoteTableWidgetItem(QTableWidgetItem):
         return self.value < other.value
 
 
+# class NoteTableWidgetHeader(QHeaderView):
+#     def __init__(self, parent):
+#         super().__init__(Qt.Horizontal, parent=parent)
+#         self.clicked.connect(print)
+#         self.sectionClicked.connect(print)
+#         self.sectionHandleDoubleClicked.connect(print)
+
+
 class NotesTableWidget(QTableWidget):
     """Предназначен для отображения и взаимодействия пользователя
      с записями внутри default category"""
@@ -43,21 +53,35 @@ class NotesTableWidget(QTableWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.data_base = ''
-        self.category_id = -1
+        self.data_base = self.parent().data_base
+        self.category_id = self.parent().category_id
 
         self.acDelete = QAction(self)
         self.acDelete.setText("Delete")
         self.acDelete.triggered.connect(self.deleteNotes)
 
+        # Подключаем действия к кликам
         self.cellDoubleClicked.connect(self.openEditor)
+        self.horizontalHeader().setHighlightSections(False)
+        self.horizontalHeader().sectionClicked.connect(self.sort)
+
+        # Изначальная сортировка по убыванию даты начала.
+        self.sortingCol = 0
+        self.sortOrder = Qt.DescendingOrder
+        self.setSortingEnabled(True)
+
+        # Если -1 то отображаем все
+        self.nowFlagId = -1
 
     def reload(self) -> None:
         """Полностью перезагружаем таблицу из базы данных"""
+        self.clear()
+        self.setSortingEnabled(False)  # На всякий случай.
 
         self.setColumnCount(4)
-        self.setHorizontalHeaderLabels(("Начало", "Конец", "Текст", "Флаг"))
-        notes = self.loadNotes()
+        [self.setHorizontalHeaderItem(i, QTableWidgetItem(el)) for i, el in
+         enumerate(("Начало", "Конец", "Текст", "Флаг"))]
+        notes = self.loadNotes(self.nowFlagId)
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
         self.setRowCount(len(notes))
@@ -84,19 +108,32 @@ class NotesTableWidget(QTableWidget):
                                                        brush=QBrush(QColor(r, g, b)), id_=id_))
             else:
                 self.setItem(i, 3, NoteTableWidgetItem(' ' * max_title_len, id_=id_))
-
-        self.resizeColumnsToContents()
-        self.resize(sum([self.columnWidth(i) for i in range(self.columnCount())]), self.height())
-        self.setMinimumSize(self.size())
         con.close()
 
-    def loadNotes(self) -> list:
+        # Настройки размера
+        self.resizeColumnsToContents()
+        self.resize(sum([self.columnWidth(i) for i in
+                         range(self.columnCount())]) + self.verticalHeader().width(), self.height())
+        self.setMinimumSize(self.size())
+
+        # Сортировка
+        self.setSortingEnabled(True)
+        self.sort(self.sortingCol, False)
+
+    def loadNotes(self, flagId=-1) -> list:
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
-        notes = cur.execute(
-            f'SELECT id, start, end, text, flag '
-            f'FROM defaultNotes WHERE category = {self.category_id}'
-        ).fetchall()
+        if flagId == -1:
+            notes = cur.execute(
+                f'SELECT id, start, end, text, flag '
+                f'FROM defaultNotes WHERE category = {self.category_id}'
+            ).fetchall()
+        else:  # фильтрация по флагу
+            notes = cur.execute(
+                f'SELECT id, start, end, text, flag '
+                f'FROM defaultNotes WHERE category = {self.category_id} '
+                f'AND flag = {flagId}'
+            ).fetchall()
         con.close()
         return notes
 
@@ -105,6 +142,7 @@ class NotesTableWidget(QTableWidget):
         self.editor = NoteEditor(self.data_base, self.category_id, self.currentItem().id_)
         self.editor.exec()
         self.reload()
+        self.parent().listWidget.reload()
 
     def contextMenuEvent(self, event):
         """Создаём контекстное меню"""
@@ -123,6 +161,26 @@ class NotesTableWidget(QTableWidget):
         con.commit()
         con.close()
 
+        self.reload()
+
+    def sort(self, col: int, change=True):
+        """Сортирует тоблицу по данному столбцу"""
+        if change:
+            if col == self.sortingCol:
+                if self.sortOrder == Qt.DescendingOrder:
+                    self.sortOrder = Qt.AscendingOrder
+                else:
+                    self.sortOrder = Qt.DescendingOrder
+            else:
+                self.sortOrder = Qt.DescendingOrder
+        self.sortingCol = col
+        self.sortByColumn(col, self.sortOrder)
+
+    def setFlagFilter(self, flagId: int):
+        if flagId == self.nowFlagId:
+            self.nowFlagId = -1
+        else:
+            self.nowFlagId = flagId
         self.reload()
 
 
@@ -169,11 +227,10 @@ class NoteEditor(QDialog, Ui_noteEditor):
         self.dteEnd.setDateTime(datetime.fromisoformat(end))
         self.textEdit.setText(text)
         self.fillFlagCB(flag)
-        # TODO: Обработать флаг
 
     def save(self):
         text = self.textEdit.toPlainText()
-        flag = self.cbFlags.currentData()
+        flag_id = self.cbFlags.currentData()
         start = self.dteStart.dateTime().toPyDateTime().isoformat(' ')
         end = self.dteEnd.dateTime().toPyDateTime().isoformat(' ')
 
@@ -191,7 +248,7 @@ class NoteEditor(QDialog, Ui_noteEditor):
         # Создаёт или заменяет запись
         cur.execute(f'INSERT INTO defaultNotes(id, category, text, flag, start, end) '
                     f'VALUES(?, ?, ?, ?, ?, ?)',
-                    (self.id_, self.category_id, text, flag, start, end))
+                    (self.id_, self.category_id, text, flag_id, start, end))
         con.commit()
         con.close()
 
