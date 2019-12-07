@@ -36,14 +36,6 @@ class NoteTableWidgetItem(QTableWidgetItem):
         return self.value < other.value
 
 
-# class NoteTableWidgetHeader(QHeaderView):
-#     def __init__(self, parent):
-#         super().__init__(Qt.Horizontal, parent=parent)
-#         self.clicked.connect(print)
-#         self.sectionClicked.connect(print)
-#         self.sectionHandleDoubleClicked.connect(print)
-
-
 class NotesTableWidget(QTableWidget):
     """Предназначен для отображения и взаимодействия пользователя
      с записями внутри default category"""
@@ -81,7 +73,7 @@ class NotesTableWidget(QTableWidget):
         self.setColumnCount(4)
         [self.setHorizontalHeaderItem(i, QTableWidgetItem(el)) for i, el in
          enumerate(("Начало", "Конец", "Текст", "Флаг"))]
-        notes = self.loadNotes(self.nowFlagId)
+        notes = self.parent().loadNotes(self.nowFlagId)
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
         self.setRowCount(len(notes))
@@ -119,23 +111,6 @@ class NotesTableWidget(QTableWidget):
         # Сортировка
         self.setSortingEnabled(True)
         self.sort(self.sortingCol, False)
-
-    def loadNotes(self, flagId=-1) -> list:
-        con = sqlite3.connect(self.data_base)
-        cur = con.cursor()
-        if flagId == -1:
-            notes = cur.execute(
-                f'SELECT id, start, end, text, flag '
-                f'FROM defaultNotes WHERE category = {self.category_id}'
-            ).fetchall()
-        else:  # фильтрация по флагу
-            notes = cur.execute(
-                f'SELECT id, start, end, text, flag '
-                f'FROM defaultNotes WHERE category = {self.category_id} '
-                f'AND flag = {flagId}'
-            ).fetchall()
-        con.close()
-        return notes
 
     def openEditor(self) -> None:
         """Открытие редактора"""
@@ -176,11 +151,11 @@ class NotesTableWidget(QTableWidget):
         self.sortingCol = col
         self.sortByColumn(col, self.sortOrder)
 
-    def setFlagFilter(self, flagId: int):
-        if flagId == self.nowFlagId:
+    def setFlagFilter(self, flag_id: int):
+        if flag_id == self.nowFlagId:
             self.nowFlagId = -1
         else:
-            self.nowFlagId = flagId
+            self.nowFlagId = flag_id
         self.reload()
 
 

@@ -1,5 +1,4 @@
 import sqlite3
-import time
 
 from PyQt5.QtWidgets import QListWidgetItem, QWidget, QDialog, QListWidget, QAction, QMenu
 
@@ -8,6 +7,7 @@ from ui_category import Ui_Category
 from datetime import datetime
 from notes import NoteEditor
 from flags import FlagEditor
+from diagram import DiagramWidget
 
 DEFAULT_CATEGORY = 1
 BUDGET_CATEGORY = 2
@@ -150,6 +150,7 @@ class CategoryWidget(QWidget, Ui_Category):
         self.pbNew.clicked.connect(self.createNote)
         self.pbNew.setShortcut("Ctrl+N")
         self.pbAddFlag.clicked.connect(self.createFlag)
+        self.pbChart.clicked.connect(self.openDiagram)
 
     def createNote(self):
         """Открытие редактора"""
@@ -162,26 +163,46 @@ class CategoryWidget(QWidget, Ui_Category):
         super().setupUi(Category)
         self.setWindowTitle(self.title)
 
-    def loadNotes(self) -> list:
+    def loadNotes(self, flag_id=-1) -> list:
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
-        notes = cur.execute(
-            f'SELECT * FROM defaultNotes WHERE category = {self.category_id}').fetchall()
+        if flag_id == -1:
+            notes = cur.execute(
+                f'SELECT id, start, end, text, flag '
+                f'FROM defaultNotes WHERE category = {self.category_id}'
+            ).fetchall()
+        else:  # фильтрация по флагу
+            notes = cur.execute(
+                f'SELECT id, start, end, text, flag '
+                f'FROM defaultNotes WHERE category = {self.category_id} '
+                f'AND flag = {flag_id}'
+            ).fetchall()
         con.close()
         return notes
 
-    def loadFlags(self) -> list:
+    def loadFlagsId(self) -> list:
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
-        flags = cur.execute(
-            f'SELECT * FROM defaultNotes WHERE category = {self.category_id}').fetchall()
+        ids = [tup[0] for tup in cur.execute(
+            f'SELECT id FROM flags WHERE category = {self.category_id}').fetchall()]
         con.close()
-        return flags
+        return ids
 
     def createFlag(self):
         self.dl = FlagEditor(self.data_base, self.category_id)
         self.dl.exec()
         self.listWidget.reload()
+
+    def setFlagFilter(self, flag_id: int = -1):
+        self.tableWidget.setFlagFilter(flag_id)
+
+    def reload(self):
+        self.tableWidget.reload()
+        self.listWidget.reload()
+
+    def openDiagram(self):
+        self.dia = DiagramWidget(self)
+        self.dia.show()
 
 
 class BudgetCategory():

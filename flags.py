@@ -48,16 +48,22 @@ class FlagListWidget(QListWidget):
         self.acDelete = QAction(self)
         self.acDelete.setText("Delete")
         self.acDelete.triggered.connect(self.deleteFlags)
+        self.acOpenEditor = QAction(self)
+        self.acOpenEditor.setText("Edit")
+        self.acOpenEditor.triggered.connect(self.openFlagEditor)
 
         # Настройка кликов
-        self.itemDoubleClicked.connect(self.openFlagEditor)
+        self.editable = True
         self.itemClicked.connect(self.setFilter)
 
         self.reload()
 
     def contextMenuEvent(self, event):
         """Создаём контекстное меню"""
+        if not self.editable:
+            return None
         menu = QMenu(self)
+        menu.addAction(self.acOpenEditor)
         menu.addAction(self.acDelete)
         menu.exec(self.mapToGlobal(event.pos()))
 
@@ -67,38 +73,37 @@ class FlagListWidget(QListWidget):
         for item in items:
             if isinstance(item, FlagListWidgetItem):
                 item.deleteFromDB()
-        self.reload()
-        self.parent().tableWidget.reload()
-
-    def loadFlagsId(self) -> list:
-        con = sqlite3.connect(self.data_base)
-        cur = con.cursor()
-        ids = [tup[0] for tup in cur.execute(
-            f'SELECT id FROM flags WHERE category = {self.category_id}').fetchall()]
-        con.close()
-        return ids
+        self.parent().reload()
 
     def reload(self):
         self.clear()
-        ids = self.loadFlagsId()
+        ids = self.parent().loadFlagsId()
         items = [FlagListWidgetItem(flag_id, self.data_base) for flag_id in ids]
         for item in items:
             self.addItem(item)
-        self.addItem(QListWidgetItem("Показать все"))
 
-    def openFlagEditor(self, item):
+        if self.editable:
+            self.addItem(QListWidgetItem("Показать все"))
+
+    def openFlagEditor(self):
+        if not self.editable:
+            return None
+
+        item = self.selectedItems()[0]
         if not isinstance(item, FlagListWidgetItem):
             return None
         self.dl = FlagEditor(self.data_base, self.category_id, item.flag_id)
         self.dl.exec()
-        self.reload()
-        self.parent().tableWidget.reload()
+        self.parent().reload()
 
     def setFilter(self, item):
+        if not self.editable:
+            return None
+
         if isinstance(item, FlagListWidgetItem):
-            self.parent().tableWidget.setFlagFilter(item.flag_id)
+            self.parent().setFlagFilter(item.flag_id)
         else:
-            self.parent().tableWidget.setFlagFilter(-1)
+            self.parent().setFlagFilter(-1)
 
 
 class FlagIcon(QIcon):

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Diagramm</class>
+ <widget class="QWidget" name="Diagramm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>723</width>
+    <height>474</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Диаграмма</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(0, 44, 44);
+selection-background-color: rgb(7, 52, 80);
+alternate-background-color: rgb(0, 85, 0);
+
+color: rgb(217, 212, 199);
+
+font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="5">
+    <widget class="QListWidget" name="listWidget">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(0, 25, 25);</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QDateTimeEdit" name="dteStart"/>
+   </item>
+   <item row="0" column="3">
+    <widget class="QDateTimeEdit" name="dteEnd"/>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="lbllTo">
+     <property name="text">
+      <string>По</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Флаги</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="lblFrom">
+     <property name="text">
+      <string>C</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="5">
+    <widget class="QWidget" name="frame" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
