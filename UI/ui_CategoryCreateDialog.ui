@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>365</width>
-    <height>200</height>
+    <height>144</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,13 +22,13 @@
   <property name="minimumSize">
    <size>
     <width>365</width>
-    <height>200</height>
+    <height>144</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>365</width>
-    <height>200</height>
+    <width>123456</width>
+    <height>144</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -43,12 +43,12 @@ color: rgb(217, 212, 199);
 
 font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,3,3,3">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,3">
    <property name="sizeConstraint">
     <enum>QLayout::SetDefaultConstraint</enum>
    </property>
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="lblTitle">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -70,49 +70,6 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
      </property>
      <property name="placeholderText">
       <string>Мои сновидения</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>16</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_2">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Тип:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="rbDefault">
-     <property name="text">
-      <string>Обычный</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="rbBudget">
-     <property name="text">
-      <string>Бюджет</string>
      </property>
     </widget>
    </item>

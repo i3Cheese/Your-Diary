@@ -1,8 +1,0 @@
-# Рыбная тема
-background-color: rgb(0, 44, 44);
-selection-background-color: rgb(7, 52, 80);
-alternate-background-color: rgb(0, 85, 0);
-
-color: rgb(217, 212, 199);
-
-font: 11.5pt "MS Shell Dlg 2";

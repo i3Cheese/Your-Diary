@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Tuple
 
 from PyQt5.QtWidgets import QListWidgetItem, QWidget, QDialog, QListWidget, QAction, QMenu
 
@@ -8,9 +9,7 @@ from datetime import datetime
 from notes import NoteEditor
 from flags import FlagEditor
 from diagram import DiagramWidget
-
-DEFAULT_CATEGORY = 1
-BUDGET_CATEGORY = 2
+from histogram import HistogramWidget
 
 
 class CategoryCreateDialog(QDialog, Ui_CategoryCreateDialog):
@@ -18,19 +17,17 @@ class CategoryCreateDialog(QDialog, Ui_CategoryCreateDialog):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
-    def answer(self) -> tuple:
+    def answer(self) -> str:
         title = self.leTitle.text()
-        categoryType = DEFAULT_CATEGORY if self.rbDefault.isChecked() \
-            else BUDGET_CATEGORY if self.rbBudget.isChecked() else None
-        return title, categoryType
+        return title
 
 
 class CategoryListWidgetItem(QListWidgetItem):
-    """Общия для Budget и Default"""
+    creation: datetime
     data_base: str
     id_: int
 
-    def __init__(self, id_, data_base):
+    def __init__(self, id_: int, data_base: str):
         self.id_ = id_
         self.data_base = data_base
 
@@ -45,16 +42,12 @@ class CategoryListWidgetItem(QListWidgetItem):
         super().__init__(str(self))
 
     def open(self):
-        if self.categoryType == DEFAULT_CATEGORY:
-            self.widget = CategoryWidget(self.id_, self.data_base)
-            self.widget.show()
-        else:
-            # TODO: add budgetCategoryWidget
-            pass
+        """Открывает окно категории"""
+        self.widget = CategoryWidget(self.id_, self.data_base)
+        self.widget.show()
 
     def __str__(self):
-        return f'"{self.title}". {"БЮДЖЕТ. " if self.categoryType == BUDGET_CATEGORY else ""}' \
-               f'Создан {self.creation}.'
+        return f'"{self.title}". Создан {self.creation.strftime("%Y %b %d %H:%M")}.'
 
     def __lt__(self, other):
         return self.creation < other.creation
@@ -72,6 +65,7 @@ class CategoryListWidgetItem(QListWidgetItem):
 
 class DiaryListWidget(QListWidget):
     """Предназначен для отображения существующих категорий в MainWindow"""
+    data_base: str
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,18 +95,20 @@ class DiaryListWidget(QListWidget):
         con = sqlite3.connect(self.data_base)
         cur = con.cursor()
         ids = [tup[0] for tup in cur.execute(
-            f'SELECT id FROM categories ORDER BY NOT creation').fetchall()]
+            f'SELECT id FROM categories ORDER BY creation DESC').fetchall()]
         con.close()
         return ids
 
     def reload(self):
+        """Перезагружает своё содержимое из базы данных"""
         ids = self.loadCategoriesId()
         items = [CategoryListWidgetItem(id_, self.data_base) for id_ in ids]
         self.clear()
         for item in items:
             self.addItem(item)
 
-    def openCategory(self, item: CategoryListWidgetItem):
+    @staticmethod
+    def openCategory(item: CategoryListWidgetItem):
         item.open()
 
 
@@ -136,28 +132,20 @@ class CategoryWidget(QWidget, Ui_Category):
 
         self.setupUi(self)
 
-        # Отображаем записи(Если делать это в __init__ NotesTableWidget то их не будет видно)
-        self.tableWidget.reload()
-
-        # Настройки размера окна
-        self.resize(
-            self.verticalLayout.maximumSize().width() + self.tableWidget.size().width() + 35,
-            self.height())  # +35 компенсирует пространство между виджетами
-        # 35 я подобрал, на других устройствах может быть подругому.
-        self.setMinimumWidth(self.size().width())
-
         # Настройки кнопок
         self.pbNew.clicked.connect(self.createNote)
         self.pbNew.setShortcut("Ctrl+N")
         self.pbAddFlag.clicked.connect(self.createFlag)
         self.pbChart.clicked.connect(self.openDiagram)
+        self.pbHistogram.clicked.connect(self.openHistogram)
+
+        self.reload()
 
     def createNote(self):
         """Открытие редактора"""
         self.editor = NoteEditor(self.data_base, self.category_id, -1)
         self.editor.exec()
-        self.tableWidget.reload()
-        self.listWidget.reload()
+        self.reload()
 
     def setupUi(self, Category):
         super().setupUi(Category)
@@ -191,19 +179,42 @@ class CategoryWidget(QWidget, Ui_Category):
     def createFlag(self):
         self.dl = FlagEditor(self.data_base, self.category_id)
         self.dl.exec()
-        self.listWidget.reload()
+        self.reload()
 
     def setFlagFilter(self, flag_id: int = -1):
         self.tableWidget.setFlagFilter(flag_id)
 
     def reload(self):
+        """Перезагружает своё содержимое из базы данных"""
         self.tableWidget.reload()
         self.listWidget.reload()
+        # Настройки размера окна
+        self.resize(
+            self.verticalLayout.maximumSize().width() + self.tableWidget.size().width() + 36,
+            self.height())  # +35 компенсирует пространство между виджетами
+        # 35 я подобрал, на других устройствах может быть подругому.
 
     def openDiagram(self):
         self.dia = DiagramWidget(self)
         self.dia.show()
 
+    def openHistogram(self):
+        self.hist = HistogramWidget(self)
+        self.hist.show()
 
-class BudgetCategory():
-    pass
+    def getTimeBorders(self) -> Tuple[datetime, datetime]:
+        """Возвращает минимальное и максимальное из времен в записи"""
+        con = sqlite3.connect(self.data_base)
+        cur = con.cursor()
+        start = cur.execute(
+            f'SELECT start '
+            f'FROM defaultNotes WHERE category = {self.category_id} ORDER BY start ASC'
+        ).fetchone()[0]
+        end = cur.execute(
+            f'SELECT end '
+            f'FROM defaultNotes WHERE category = {self.category_id} ORDER BY end DESC'
+        ).fetchone()[0]
+        con.close()
+
+        start, end = datetime.fromisoformat(start), datetime.fromisoformat(end)
+        return start, end

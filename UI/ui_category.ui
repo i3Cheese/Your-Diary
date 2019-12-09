@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>912</width>
+    <width>1000</width>
     <height>517</height>
    </rect>
   </property>
@@ -41,7 +41,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="maximumSize">
         <size>
-         <width>183</width>
+         <width>200</width>
          <height>87</height>
         </size>
        </property>
@@ -73,7 +73,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pbLoadShedule">
+      <widget class="QPushButton" name="pbHistogram">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -88,7 +88,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="maximumSize">
         <size>
-         <width>183</width>
+         <width>200</width>
          <height>52</height>
         </size>
        </property>
@@ -96,7 +96,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
         <string notr="true">background-color: rgb(0, 25, 25);</string>
        </property>
        <property name="text">
-        <string>График загружености</string>
+        <string>Гистограмма</string>
        </property>
       </widget>
      </item>
@@ -116,7 +116,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="maximumSize">
         <size>
-         <width>183</width>
+         <width>200</width>
          <height>53</height>
         </size>
        </property>
@@ -144,7 +144,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="maximumSize">
         <size>
-         <width>183</width>
+         <width>200</width>
          <height>35</height>
         </size>
        </property>
@@ -182,7 +182,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="maximumSize">
         <size>
-         <width>183</width>
+         <width>200</width>
          <height>18</height>
         </size>
        </property>
@@ -204,7 +204,7 @@ font: 11.5pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="maximumSize">
         <size>
-         <width>183</width>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>

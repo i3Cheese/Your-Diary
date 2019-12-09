@@ -7,7 +7,10 @@ from typing import Tuple
 
 
 class FlagListWidgetItem(QListWidgetItem):
-    def __init__(self, flag_id, data_base):
+    flag_id: int
+    data_base: str
+
+    def __init__(self, flag_id: int, data_base: str):
         self.flag_id = flag_id
         self.data_base = data_base
 
@@ -36,7 +39,7 @@ class FlagListWidgetItem(QListWidgetItem):
 
 
 class FlagListWidget(QListWidget):
-    """Предназначен для отображения существующих категорий в MainWindow"""
+    """Предназначен для отображения флагов"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -55,8 +58,6 @@ class FlagListWidget(QListWidget):
         # Настройка кликов
         self.editable = True
         self.itemClicked.connect(self.setFilter)
-
-        self.reload()
 
     def contextMenuEvent(self, event):
         """Создаём контекстное меню"""
@@ -84,6 +85,10 @@ class FlagListWidget(QListWidget):
 
         if self.editable:
             self.addItem(QListWidgetItem("Показать все"))
+        else:
+            item = QListWidgetItem("Без флага")
+            item.setBackground(QColor(50, 50, 50))
+            self.addItem(item)
 
     def openFlagEditor(self):
         if not self.editable:
