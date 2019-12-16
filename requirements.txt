@@ -1,0 +1,4 @@
+pyqtgraph==0.10.0
+PyQt==5.9.2
+sqlite==3.29.0
+python==3.7.3
