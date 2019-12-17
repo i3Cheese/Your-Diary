@@ -1,6 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
-from math import pi
+from datetime import datetime
 
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QWidget
