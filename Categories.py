@@ -209,12 +209,17 @@ class CategoryWidget(QWidget, Ui_Category):
         start = cur.execute(
             f'SELECT start '
             f'FROM defaultNotes WHERE category = {self.category_id} ORDER BY start ASC'
-        ).fetchone()[0]
+        ).fetchone()
         end = cur.execute(
             f'SELECT end '
             f'FROM defaultNotes WHERE category = {self.category_id} ORDER BY end DESC'
-        ).fetchone()[0]
+        ).fetchone()
         con.close()
 
+        if start:
+            start = start[0]
+            end = end[0]
+        else:
+            return datetime.today(), datetime.today()
         start, end = datetime.fromisoformat(start), datetime.fromisoformat(end)
         return start, end
